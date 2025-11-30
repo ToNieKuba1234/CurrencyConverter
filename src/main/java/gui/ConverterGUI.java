@@ -22,13 +22,7 @@ public class ConverterGUI extends JFrame {
     //GUI elements
     JPanel titlePanel = new JPanel();
     JPanel converterPanel = new JPanel();
-    // Nie potrzebujemy centerContainer, jeśli używamy GridBagLayout w JFrame,
-    // ale zostawiamy go dla celów centrowania, jeśli zmienimy layout ramy.
-    // Usuniemy go z deklaracji GUI elements, by niepotrzebnie nie zaśmiecał kodu
-    // i nie duplikował funkcjonalności, ale jest użyty w centrowaniu
 
-    // Zmienna dla centrowania (zostawiamy ją jako lokalną w konstruktorze,
-    // aby uniknąć pomyłek w przyszłości, ale zostawię to tutaj, żeby nie zmieniać pól klasy)
     JPanel centerContainer = new JPanel();
 
     JLabel titleLabel = new JLabel();
