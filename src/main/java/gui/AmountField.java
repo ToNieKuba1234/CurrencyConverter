@@ -37,24 +37,20 @@ public class AmountField extends JTextField implements FocusListener {
             @Override
             public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
                 String currText = fb.getDocument().getText(0, fb.getDocument().getLength());
-                String newText = currText.substring(0, offset) + string + currText.substring(offset);
-
-                // Only allow the input if the resulting string is a valid number
-                if(isValid(newText)) {
+                StringBuilder sb = new StringBuilder(currText);
+                sb.insert(offset, string);
+                if (isValid(sb.toString())) {
                     super.insertString(fb, offset, string, attr);
                 }
             }
 
-            // Method executed when text is replaced (e.g., highlighting and typing)
             @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-                    throws BadLocationException {
-
-                String currentText = fb.getDocument().getText(0, fb.getDocument().getLength());
-                String newText = currentText.substring(0, offset) + text + currentText.substring(offset + length);
-
-                // Only allow replacement if the final result is a valid number
-                if (isValid(newText)) {
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String currText = fb.getDocument().getText(0, fb.getDocument().getLength());
+                StringBuilder sb = new StringBuilder(currText);
+                if (offset + length > sb.length()) length = sb.length() - offset; // bezpiecznie
+                sb.replace(offset, offset + length, text == null ? "" : text);
+                if (isValid(sb.toString())) {
                     super.replace(fb, offset, length, text, attrs);
                 }
             }

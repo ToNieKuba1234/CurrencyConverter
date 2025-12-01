@@ -1,7 +1,11 @@
 package gui;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -83,6 +87,7 @@ public class ConverterGUI extends JFrame {
         amountFieldA.setFont(new Font("Arial", Font.PLAIN, 20));
 
         currencyFromBox.setPreferredSize(new Dimension(75, 45));
+        currencyFromBox.setSelectedIndex(0);
 
         swapButton.setText("⇄");
         swapButton.setPreferredSize(new Dimension(50, 45));
@@ -95,11 +100,58 @@ public class ConverterGUI extends JFrame {
         amountFieldB.setFocusable(false);
 
         currencyToBox.setPreferredSize(new Dimension(75, 45));
+        currencyToBox.setSelectedIndex(1);
 
 
         //CenterContainer prop settings
         centerContainer.setLayout(new GridBagLayout());
         centerContainer.add(converterPanel, new GridBagConstraints());
+
+        //Listening for currency change
+        currencyFromBox.addActionListener(e -> {
+            try { updateConversion(); } catch (IOException ex) { System.out.println("Err.:" + ex.getMessage()); }
+        });
+        currencyToBox.addActionListener(e -> {
+            try { updateConversion(); } catch (IOException ex) { System.out.println("Err.:" + ex.getMessage()); }
+        });
+
+        //Listening for swap
+        swapButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Swapping currencies
+                Object buffer = currencyFromBox.getSelectedItem();
+
+                currencyFromBox.setSelectedItem(currencyToBox.getSelectedItem());
+                currencyToBox.setSelectedItem(buffer);
+
+                //Updating the conversion
+                try {
+                    updateConversion();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+
+        //Listening for changes in the AmountField
+        amountFieldA.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                try { updateConversion(); } catch (IOException ex) { System.out.println("Err.:" + ex.getMessage()); }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                try { updateConversion(); } catch (IOException ex) { System.out.println("Err.:" + ex.getMessage()); }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                try { updateConversion(); } catch (IOException ex) { System.out.println("Err.:" + ex.getMessage()); }
+            }
+        });
+
 
 
         //Adding components & making them visible
@@ -117,22 +169,28 @@ public class ConverterGUI extends JFrame {
     }
 
     //Taking all the data - checking if it can be converted - usingAPI - calculating the result
+    //handles all data validation + takes all the data
     void updateConversion() throws IOException {
         String from = Objects.requireNonNull(currencyFromBox.getSelectedItem()).toString();
         String to = Objects.requireNonNull(currencyToBox.getSelectedItem()).toString();
+        String text = amountFieldA.getText().trim();
 
-        String text = amountFieldA.getText();
-        double amount = Double.parseDouble(text);
+        double amount;
+        try {
+            amount = Double.parseDouble(text.isEmpty() || text.equals(".") ? "0" : text);
+        } catch (NumberFormatException e) {
+            amountFieldB.setText("0");
+            return;
+        }
 
-        if (text.isEmpty() || text.equals(".")) { amountFieldB.setText("0"); return; }
         if (from.equals(to)) { amountFieldB.setText(removeZeroDecimal(amount)); return; }
         if (amount == 0) { amountFieldB.setText("0"); return; }
 
-        double currentRate = new RateAPI().getRate(from, to);
-        double result = Math.round(currentRate * amount * 10000.0) / 10000.0;
-
+        double rate = new RateAPI().getRate(from, to);
+        double result = Math.round(rate * amount * 100.0) / 100.0; // zaokrąglenie do 2 miejsc
         amountFieldB.setText(removeZeroDecimal(result));
     }
+
 
     //Removes the .0 in the decimal number if it's not necessary
     String removeZeroDecimal(double n) {
