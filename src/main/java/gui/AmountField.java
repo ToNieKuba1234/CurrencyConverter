@@ -66,19 +66,14 @@ public class AmountField extends JTextField implements FocusListener {
             }
         });
 
-        // 2. Set the initial placeholder look
         setPlaceholderMode();
 
-        // 3. Add the focus listener to manage placeholder state
         this.addFocusListener(this);
     }
 
-    // --- Placeholder Logic (FocusListener Implementation) ---
 
-    // When the field gains focus (user clicks it)
     @Override
     public void focusGained(FocusEvent e) {
-        // If the current text is the placeholder, switch to normal edit mode
         if (super.getText().equals(placeholder)) {
             setNormalMode();
         }
@@ -87,31 +82,26 @@ public class AmountField extends JTextField implements FocusListener {
     // When the field loses focus
     @Override
     public void focusLost(FocusEvent e) {
-        // If the field is empty after losing focus, restore the placeholder
         if (super.getText().isEmpty()) {
             setPlaceholderMode();
         } else {
-            // Ensure visual style is normal if content is present
             this.setForeground(foregroundColor);
             this.setFont(this.getFont().deriveFont(Font.PLAIN));
         }
     }
 
-    // Sets the visual style to placeholder mode (gray, italic text)
     void setPlaceholderMode() {
         this.setText(placeholder);
         this.setForeground(placeholderColor);
         this.setFont(this.getFont().deriveFont(Font.ITALIC));
     }
 
-    // Resets the visual style to normal mode (black, plain text, empty content)
     void setNormalMode() {
         this.setText("");
         this.setForeground(foregroundColor);
         this.setFont(this.getFont().deriveFont(Font.PLAIN));
     }
 
-    // Overridden method to ensure external logic doesn't read the placeholder text
     @Override
     public String getText() {
         String currentText = super.getText();

@@ -5,7 +5,11 @@ public class Main {
         //Running the Main Window
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new ConverterGUI();
+                try {
+                    new ConverterGUI();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }

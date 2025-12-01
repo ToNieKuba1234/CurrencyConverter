@@ -17,6 +17,10 @@ public class RateAPI {
 
     public double getRate(String from, String to) throws IOException {
 
+        if (from == to) {
+            return 1;
+        }
+
         String url = String.format(
                 "https://api.frankfurter.app/latest?from=%s&to=%s",
                 from.toUpperCase(),

@@ -2,9 +2,12 @@ package gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import api.RateAPI;
 
 //Main Window Handling - extending JFrame
 public class ConverterGUI extends JFrame {
@@ -34,10 +37,8 @@ public class ConverterGUI extends JFrame {
     AmountField amountFieldB = new AmountField("0");
     JComboBox<String> currencyToBox = new JComboBox<>(currencies);
 
-    //vars
-    boolean ratesAreLoaded = false;
 
-    public ConverterGUI() {
+    public ConverterGUI() throws IOException {
         //Window prop settings
         setTitle("Przelicznik Walut");
         setSize(windowWidth, windowHeight);
@@ -106,5 +107,39 @@ public class ConverterGUI extends JFrame {
         add(centerContainer, BorderLayout.CENTER);
 
         setVisible(true);
+
+//        Testing the updateConversion() method
+//        amountFieldA.setText("1.48");
+//        currencyFromBox.setSelectedItem("EUR");
+//        currencyToBox.setSelectedItem("GBP");
+
+//        updateConversion();
     }
+
+    //Taking all the data - checking if it can be converted - usingAPI - calculating the result
+    void updateConversion() throws IOException {
+        String from = Objects.requireNonNull(currencyFromBox.getSelectedItem()).toString();
+        String to = Objects.requireNonNull(currencyToBox.getSelectedItem()).toString();
+
+        String text = amountFieldA.getText();
+        double amount = Double.parseDouble(text);
+
+        if (text.isEmpty() || text.equals(".")) { amountFieldB.setText("0"); return; }
+        if (from.equals(to)) { amountFieldB.setText(removeZeroDecimal(amount)); return; }
+        if (amount == 0) { amountFieldB.setText("0"); return; }
+
+        double currentRate = new RateAPI().getRate(from, to);
+        double result = Math.round(currentRate * amount * 10000.0) / 10000.0;
+
+        amountFieldB.setText(removeZeroDecimal(result));
+    }
+
+    //Removes the .0 in the decimal number if it's not necessary
+    String removeZeroDecimal(double n) {
+        if (n % 1 == 0) {
+            return Integer.toString((int) n);
+        }
+        return Double.toString(n);
+    }
+
 }
